@@ -13,7 +13,7 @@ const useSearch = (q: string): UseQueryResult<DataItem[]> => {
   return useQuery({
     queryKey: ["posts", "search", { q }],
     queryFn: () => fetchData(q),
-    // staleTime: 5 * 60 * 1000,
+    staleTime: 5 * 60 * 1000,
     enabled: q.length > 0,
   });
 };
