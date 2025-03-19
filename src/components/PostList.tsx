@@ -1,9 +1,11 @@
-import useGetPosts from "../hooks/useGetPosts";
+import { useState, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Form, Button, ButtonGroup, Table } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { postStatusType } from "../types";
+import useGetPosts from "../hooks/useGetPosts";
 import useSearch from "../hooks/useSearch";
-import { useState } from "react";
+import { fetchPosts } from "../hooks/useGetPosts";
 
 interface PostListProps {
   selectedPostStatus: postStatusType;
@@ -16,7 +18,19 @@ const PostList = ({ selectedPostStatus, searchQuery }: PostListProps) => {
     selectedPostStatus,
     paginate
   );
+
+  const queryClient = useQueryClient();
   const searchData = useSearch(searchQuery);
+
+  useEffect(() => {
+    const nextPage = paginate + 1;
+    if (nextPage > 3) return;
+    queryClient.prefetchQuery({
+      queryKey: ["posts", { paginate: nextPage, selectedPostStatus: "all" }],
+      queryFn: () => fetchPosts("all", nextPage),
+    });
+  }, [paginate, queryClient]);
+
   if (isLoading || searchData.isLoading) {
     return <div>data loading pease wait </div>;
   }
@@ -52,7 +66,9 @@ const PostList = ({ selectedPostStatus, searchQuery }: PostListProps) => {
               <tr>
                 <td>{idx++}</td>
                 <td>
-                  <Link to="/info">{el.title}</Link>
+                  <Link to={`/info?id=${el.id}&type=paginate&key=${paginate}`}>
+                    {el.title}
+                  </Link>
                 </td>
                 <td>{el.status}</td>
                 <td style={{ textAlign: "center" }}>
@@ -71,7 +87,11 @@ const PostList = ({ selectedPostStatus, searchQuery }: PostListProps) => {
               <tr>
                 <td>{idx++}</td>
                 <td>
-                  <Link to="/info">{el.title}</Link>
+                  <Link
+                    to={`/info?id=${el.id}&type=paginate&key=${searchQuery}`}
+                  >
+                    {el.title}
+                  </Link>
                 </td>
                 <td>{el.status}</td>
                 <td style={{ textAlign: "center" }}>
