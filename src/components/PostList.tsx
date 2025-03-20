@@ -87,9 +87,7 @@ const PostList = ({ selectedPostStatus, searchQuery }: PostListProps) => {
               <tr>
                 <td>{idx++}</td>
                 <td>
-                  <Link
-                    to={`/info?id=${el.id}&type=paginate&key=${searchQuery}`}
-                  >
+                  <Link to={`/info?id=${el.id}&type=search&key=${searchQuery}`}>
                     {el.title}
                   </Link>
                 </td>
