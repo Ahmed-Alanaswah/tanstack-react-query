@@ -7,3 +7,20 @@ export interface DataItem {
 }
 
 export type postStatusType = "publish" | "draft" | "block" | "all";
+
+export interface CommentPost {
+  body: string;
+  post_id: number;
+}
+
+export interface CommentResponse {
+  id: number;
+  body: string;
+  post_id: number;
+}
+
+export interface TopRatePost {
+  postId: number;
+  rateValue: boolean;
+  pageNumber: number;
+}

@@ -3,6 +3,7 @@ import { Row, Col, Form, Button } from "react-bootstrap";
 import useGetPost from "../hooks/useGetPost";
 import React, { useState } from "react";
 import useAddComment from "../hooks/useAddComment";
+import useGetComments from "../hooks/useGetComments";
 
 const Info = () => {
   const [comment, setComment] = useState("");
@@ -16,6 +17,9 @@ const Info = () => {
     paramKey,
     paramType
   );
+
+  const getComments = useGetComments(id);
+
   const addComment = useAddComment();
   if (isLoading) {
     return <p>loadin please wait</p>;
@@ -65,8 +69,9 @@ const Info = () => {
               Submit
             </Button>
           </Form>
-          <p>Comment 1</p>
-          <p>Comment 2</p>
+          {getComments.isFetching
+            ? "loading please wait"
+            : getComments.data?.map((el) => <p key={el.id}>{el.body}</p>)}
         </div>
       </Col>
     </Row>

@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useIsFetching } from "@tanstack/react-query";
 import { Form, Button, ButtonGroup, Table } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { postStatusType } from "../types";
 import useGetPosts from "../hooks/useGetPosts";
 import useSearch from "../hooks/useSearch";
 import { fetchPosts } from "../hooks/useGetPosts";
+import useUpdateRate from "../hooks/useUpdateRate";
+import useRemovePost from "../hooks/useRemovePost";
 
 interface PostListProps {
   selectedPostStatus: postStatusType;
@@ -14,13 +16,20 @@ interface PostListProps {
 
 const PostList = ({ selectedPostStatus, searchQuery }: PostListProps) => {
   const [paginate, setPaginate] = useState(1);
-  const { isLoading, isError, error, data, isStale, refetch } = useGetPosts(
+  const { isError, error, data, isStale, refetch } = useGetPosts(
     selectedPostStatus,
     paginate
   );
 
   const queryClient = useQueryClient();
+
+  const globalLoading = useIsFetching();
+
   const searchData = useSearch(searchQuery);
+
+  const updateRate = useUpdateRate();
+
+  const deleteAction = useRemovePost();
 
   useEffect(() => {
     const nextPage = paginate + 1;
@@ -31,7 +40,7 @@ const PostList = ({ selectedPostStatus, searchQuery }: PostListProps) => {
     });
   }, [paginate, queryClient]);
 
-  if (isLoading || searchData.isLoading) {
+  if (globalLoading) {
     return <div>data loading pease wait </div>;
   }
 
@@ -72,11 +81,28 @@ const PostList = ({ selectedPostStatus, searchQuery }: PostListProps) => {
                 </td>
                 <td>{el.status}</td>
                 <td style={{ textAlign: "center" }}>
-                  <Form.Check checked={!!el.topRate} type="switch" />
+                  <Form.Check
+                    checked={!!el.topRate}
+                    type="switch"
+                    disabled={selectedPostStatus !== "all"}
+                    onChange={(e) =>
+                      updateRate.mutate({
+                        postId: el.id,
+                        rateValue: e.target.checked,
+                        pageNumber: paginate,
+                      })
+                    }
+                  />
                 </td>
                 <td>
                   <ButtonGroup aria-label="Basic example">
-                    <Button variant="danger">Delete</Button>
+                    <Button
+                      variant="danger"
+                      onClick={() => deleteAction.mutate(el.id)}
+                      disabled={selectedPostStatus !== "all"}
+                    >
+                      Delete
+                    </Button>
                   </ButtonGroup>
                 </td>
               </tr>
@@ -93,7 +119,18 @@ const PostList = ({ selectedPostStatus, searchQuery }: PostListProps) => {
                 </td>
                 <td>{el.status}</td>
                 <td style={{ textAlign: "center" }}>
-                  <Form.Check checked={!!el.topRate} type="switch" />
+                  <Form.Check
+                    checked={!!el.topRate}
+                    type="switch"
+                    disabled={searchQuery.length > 0}
+                    onChange={(e) =>
+                      updateRate.mutate({
+                        postId: el.id,
+                        rateValue: e.target.checked,
+                        pageNumber: paginate,
+                      })
+                    }
+                  />
                 </td>
                 <td>
                   <ButtonGroup aria-label="Basic example">
